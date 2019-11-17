@@ -1,10 +1,17 @@
 package uni.fmi.masters.rest;
 
+import java.util.List;
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +28,7 @@ public class Comment {
 	public Comment(CommentRepo commentRepo) {
 		this.commentRepo = commentRepo;
 	}
+	
 	
 	@PostMapping(path = "/comment/add")
 	public String addComment(
@@ -53,6 +61,43 @@ public class Comment {
 			return "error";
 		}
 		
+	}
+	
+	@DeleteMapping(path = "/comment/delete")
+	public ResponseEntity<Boolean> deleteComment(
+			@RequestParam(value = "id") int id,
+			HttpSession session
+			){
+		
+		UserBean user = (UserBean)session.getAttribute("user");
+		
+		if(user == null) {
+			return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
+		}
+		
+		Optional<CommentBean> optionalComment = commentRepo.findById(id);
+		
+		if(optionalComment.isPresent()) {
+			
+			CommentBean comment = optionalComment.get();
+			
+			if(comment.getUser().getId() == user.getId()) {
+				commentRepo.delete(comment);
+				
+				return new ResponseEntity<>(true, HttpStatus.OK);
+			}else {
+				return new ResponseEntity<>(false, HttpStatus.I_AM_A_TEAPOT);
+			}
+						
+		}else {
+			return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+		}		
+	}
+	
+	
+	@GetMapping(path = "/comment/all")
+	public List<CommentBean> getAllComments(){
+		return commentRepo.findAll();
 	}
 
 }
