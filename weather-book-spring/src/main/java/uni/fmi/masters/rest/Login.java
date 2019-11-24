@@ -7,11 +7,18 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import uni.fmi.masters.WebSecurityConfig;
 import uni.fmi.masters.beans.UserBean;
 import uni.fmi.masters.respositories.UserRepo;
 
@@ -19,9 +26,11 @@ import uni.fmi.masters.respositories.UserRepo;
 public class Login {
 
 	private UserRepo userRepo;
+	private WebSecurityConfig webSecurityConfig;
 
 	public Login(UserRepo userRepo) {
 		this.userRepo = userRepo;
+		webSecurityConfig = new WebSecurityConfig();
 	}
 
 	@PostMapping(path = "/register")
@@ -45,8 +54,30 @@ public class Login {
 		UserBean user = userRepo.findUserByUsernameAndPassword(username, hashMe(password));
 
 		if (user != null) {
-
 			session.setAttribute("user", user);
+			
+			UserDetails userDetails = 
+					webSecurityConfig.userDetailsService()
+					.loadUserByUsername(user.getUsername());
+			
+			if(userDetails != null) {
+				Authentication authentication = 
+						new UsernamePasswordAuthenticationToken(
+								userDetails.getUsername(),
+								userDetails.getPassword(),
+								userDetails.getAuthorities()
+								);
+				
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+				
+				ServletRequestAttributes attr = (ServletRequestAttributes)
+						RequestContextHolder.currentRequestAttributes();
+				
+				HttpSession httpSession = attr.getRequest().getSession(true);
+				httpSession.setAttribute(
+						"SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());			
+			}
+			
 
 			return "home.html";
 		} else {
