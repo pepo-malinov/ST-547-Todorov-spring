@@ -2,6 +2,8 @@ package uni.fmi.masters.rest;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpSession;
 
@@ -19,6 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import uni.fmi.masters.WebSecurityConfig;
+import uni.fmi.masters.beans.CommentBean;
 import uni.fmi.masters.beans.UserBean;
 import uni.fmi.masters.respositories.UserRepo;
 
@@ -85,6 +88,37 @@ public class Login {
 		}
 
 	}
+	
+	
+	@GetMapping(path="/profile")
+	public ResponseEntity<UserBean> getProfile(HttpSession session){
+		
+		UserBean user = (UserBean) session.getAttribute("user");
+		
+		if(user != null)
+		{
+			
+			Optional<UserBean> userFromDb = userRepo.findById(user.getId());
+			
+			if(userFromDb.isPresent())
+			{
+				return new ResponseEntity<>(
+					userFromDb.get(),HttpStatus.OK);
+			}
+			
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);		
+					
+					
+		}
+		
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);		
+		
+		
+		
+		
+		
+	}
+	
 	
 	@GetMapping(path = "/whoAmI")
 	public ResponseEntity<Integer> whoAmI(HttpSession session){

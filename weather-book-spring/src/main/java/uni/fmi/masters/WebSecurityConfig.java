@@ -21,6 +21,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		http.authorizeRequests().antMatchers("/**").permitAll()
 		.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 		.and().csrf().disable();
+		http.headers().frameOptions().disable();
 	}
 	
 	
@@ -33,8 +34,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		UserDetails admin = 
 				User.withDefaultPasswordEncoder().username("admincho")
 				.password("password").roles("ADMIN").build();
-		
-		return new InMemoryUserDetailsManager(user, admin);	
+		UserDetails admin2 = 
+				User.withDefaultPasswordEncoder().username("test")
+				.password("password").roles("ADMIN").build();
+		return new InMemoryUserDetailsManager(user, admin,admin2);	
 		
 	}
 }
