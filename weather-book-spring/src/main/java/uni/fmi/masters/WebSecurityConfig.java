@@ -2,6 +2,7 @@ package uni.fmi.masters;
 
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -17,27 +18,38 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 		jsr250Enabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
+	
+	private ApplicationUserDetailsService _userDetailService;
+	public WebSecurityConfig(ApplicationUserDetailsService userDetailsService) {
+		// TODO Auto-generated constructor stub
+		_userDetailService = userDetailsService;
+	}
+	
+	
+	
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests().antMatchers("/**").permitAll()
-		.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
+		.requestMatchers(EndpointRequest.toAnyEndpoint())
+		.permitAll()
 		.and().csrf().disable();
 		http.headers().frameOptions().disable();
 	}
 	
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) 
+			throws Exception {
+		// TODO Auto-generated method stub
+		super.configure(auth);
+		auth.userDetailsService(_userDetailService);
+	}
+	
+	
+	
 	
 	@Bean
 	public UserDetailsService userDetailsService() {		
-		UserDetails user = 
-				User.withDefaultPasswordEncoder()
-				.username("mariika").password("password").roles("USER").build();
 		
-		UserDetails admin = 
-				User.withDefaultPasswordEncoder().username("admincho")
-				.password("password").roles("ADMIN").build();
-		UserDetails admin2 = 
-				User.withDefaultPasswordEncoder().username("test")
-				.password("password").roles("ADMIN").build();
-		return new InMemoryUserDetailsManager(user, admin,admin2);	
+		return _userDetailService;	
 		
 	}
 }

@@ -26,68 +26,40 @@
 
 <div class="home-page">
 
-        <header>
-            <div class="container">
-                <nav class="navbar navbar-default">
+      	<header>
+			<div class="container">
+				<nav class="navbar navbar-expand-lg">
 
-                        <!-- Brand and toggle get grouped for better mobile display -->
-                        <div class="navbar-header">
-                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
-                                <span class="sr-only">Toggle navigation</span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </button>
-                            <div class="current-weather">
-                                <div class="img-container">
-                                    <img src="assets/img/weather_icon.png" style="display:none;"/>
-                                </div>
-                                <div class="info">
-                                    <div class="city">Пловдив</div>
-                                    <div id="current-condition"></div>
-                                    <div class="pull-right"><span id="current-temperature"></span> ℃</div>
-                                </div>
-                            </div>
-                        </div>
+					<!-- Brand and toggle get grouped for better mobile display -->
 
-                        <!-- Collect the nav links, forms, and other content for toggling -->
-                        <div class="collapse navbar-collapse" id="navbar-collapse">
-                            <ul class="nav navbar-nav navbar-right">
-                                <li class="active">
-                                    <a href="home.html">
-                                        <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
-                                        <span class="nav-label">Начало</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="friends.html">
-                                        <i class="fa fa-users" aria-hidden="true"></i>
-                                        <span class="nav-label">Приятели</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="inbox.html">
-                                        <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
-                                        <span class="nav-label">Известия</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="profile.html">
-                                        <i class="fa fa-cogs" aria-hidden="true"></i>
-                                        <span class="nav-label">Профил</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="index.html">
-                                        <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
-                                        <span class="nav-label">Изход</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div><!-- /.navbar-collapse -->
-                </nav>
-            </div>
-        </header>
+
+					<div class="current-weather">
+						<div class="img-container">
+							<img src="assets/img/weather_icon.png" style="display: none;" />
+						</div>
+						<div class="info">
+							<div class="city">Пловдив</div>
+							<div id="current-condition"></div>
+							<div class="pull-right">
+								<span id="current-temperature"></span> ℃
+							</div>
+						</div>
+					</div>
+
+
+					<!-- Collect the nav links, forms, and other content for toggling -->
+					<div class="collapse navbar-collapse" id="navbarSupportedContent">
+						<ul class="navbar-nav mr-auto">
+							<li class="nav-item"><a href="home.html"  class="nav-link" >Начало</a></li>
+							<li class="nav-item"><a href="profile.html"  class="nav-link" >Профил</a></li>
+
+						</ul>
+						<button id="btn_logout" class="btn btn-success">Изход</button>
+					</div>
+				</nav>
+			</div>
+		</header>
+
 
 
         <div class="container">
@@ -150,6 +122,29 @@
 <script>
 
 $(function(){
+	var apiid = "891be3d8ea6c5763c5d8e6ad1267c77b";
+	setInterval(function() {
+		getPlovdivTemp(apiid);
+		 }, 5000);
+	$('#btn_logout').on('click',function() {
+
+		$.ajax(
+				{
+				method : "POST",
+				url : "/profile/logout",
+				complete : function(resp) {
+						if (resp.status === 200) {
+							window.location.href = "index.html";
+
+						} else {
+							alert("ERROR!");
+
+						}
+					}
+				})
+			});
+	
+	
 	
 	$.ajax({
 		
@@ -183,7 +178,6 @@ $(function(){
 			complete:function(response){
 				
 				if(response.status === 200){
-					alert("SUCCESS");
 					$('#register-pass').val('');
 					$('#confirm-register-pass').val('');
 					
@@ -196,7 +190,20 @@ $(function(){
 	});
 });
 
+function getPlovdivTemp(apiid)
+{  
 
+	$.ajax({
+		method : "GET",
+		url : "http://api.openweathermap.org/data/2.5/weather?q=plovdiv"
+				+ "&appid="
+				+ apiid
+				+ "&units=metric",
+		success : function(resp) {
+			$('#current-temperature').html(resp.main.temp)
+		}
+	})
+}
 </script>
 
 </body>

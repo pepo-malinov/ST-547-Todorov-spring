@@ -2,6 +2,7 @@ package uni.fmi.masters.beans;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,8 +10,13 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.ManyToAny;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -39,6 +45,16 @@ public class UserBean {
 			fetch = FetchType.EAGER)
 	private List<CommentBean> comments;
 	
+	
+	@ManyToMany()
+	@JoinTable(name="account_role",
+			joinColumns=@JoinColumn(name="account_id"),
+			inverseJoinColumns= @JoinColumn(name="role_id")
+			)
+	private Set<RoleBean> roles;
+	
+	
+
 	public UserBean() {	}
 	
 	public UserBean(String username, String email, String password) {
@@ -94,7 +110,15 @@ public class UserBean {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	
+	public Set<RoleBean> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<RoleBean> roles) {
+		this.roles = roles;
+	}
 		
 	
 	
